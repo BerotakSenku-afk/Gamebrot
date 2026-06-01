@@ -5,7 +5,43 @@ import random
 import pygame.gfxdraw
 import json
 import os
+import traceback
+# ============================================================
+# ERROR LOGGER - Taruh tepat di sini, setelah semua import
+# ============================================================
+import os
+_possible_paths = [
+    '/sdcard/bb_error.txt',
+    '/storage/emulated/0/bb_error.txt',  # Path alternatif Android modern
+    os.path.expanduser('~/bb_error.txt'),
+]
+_log = 'bb_error.txt'  # default
+for _p in _possible_paths:
+    try:
+        _dir = os.path.dirname(_p)
+        if os.path.exists(_dir):
+            _log = _p
+            break
+    except Exception:
+        pass
+try:
+    _lf = open(_log_path, 'w', buffering=1)
+    sys.stderr = _lf
+    sys.stdout = _lf
+except Exception:
+    pass
 
+def _crash_handler(exc_type, exc_val, exc_tb):
+    msg = ''.join(traceback.format_exception(exc_type, exc_val, exc_tb))
+    try:
+        with open(_log_path, 'a') as f:
+            f.write('\n=== CRASH ===\n')
+            f.write(msg)
+    except Exception:
+        pass
+
+sys.excepthook = _crash_handler
+print("=== App Starting ===")
 # --- INTERFACES GETAR ANDROID NATIVE ---
 IS_ANDROID = False
 try:
@@ -25,7 +61,7 @@ if IS_ANDROID:
     WIDTH, HEIGHT = screen.get_size()
 else:
     WIDTH, HEIGHT = 450, 750
-    screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.SCALED | pygame.FULLSCREEN)
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Brick Breaker - Dynamic Island Settings")
 
 # --- WARNA ---
@@ -52,7 +88,17 @@ TARGET_FPS = 60
 UNLOCKED_ACHIEVEMENTS = []
 SELECTED_SKIN_IDX = 0
 
-SAVE_FILE = "savegame.json"
+if IS_ANDROID:
+    try:
+        from android.storage import app_storage_path
+        SAVE_FILE = os.path.join(app_storage_path(), "savegame.json")
+    except Exception:
+        SAVE_FILE = "/sdcard/savegame.json"
+else:
+    SAVE_FILE = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "savegame.json"
+    )
 
 # --- ACHIEVEMENT DATA ---
 ACHIEVEMENT_MILESTONES = {
@@ -109,11 +155,12 @@ if os.path.exists(FONT_FILE):
     FONT_TITLE = pygame.font.Font(FONT_FILE, 70)   
     FONT_BUTTON = pygame.font.Font(FONT_FILE, 34)  
 else:
-    FONT_MINI = pygame.font.SysFont("Arial", 28, bold=True)
-    FONT_SUB = pygame.font.SysFont("Arial", 32, bold=True)
-    FONT_UI = pygame.font.SysFont("Arial", 44, bold=True)
-    FONT_TITLE = pygame.font.SysFont("Arial", 72, bold=True)
-    FONT_BUTTON = pygame.font.SysFont("Arial", 36, bold=True)
+    FONT_MICRO = pygame.font.Font(None, 18)
+    FONT_MINI = pygame.font.Font(None, 28)
+    FONT_SUB = pygame.font.Font(None, 32)
+    FONT_UI = pygame.font.Font(None, 44)
+    FONT_TITLE = pygame.font.Font(None, 72)
+    FONT_BUTTON = pygame.font.Font(None, 36)
 
 # --- LOAD ASSETS ---
 def load_ui_image(filename, fallback_color, size=(32, 32)):
