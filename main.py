@@ -183,6 +183,7 @@ try:
     # FIX: SCALE
     # --------------------------------------------------------
     SCALE = HEIGHT / 750.0
+    SCALE = min(SCALE,1.8)
 
     # --------------------------------------------------------
     # FIX: FONT - Font(None) selalu ada, SysFont tidak ada di Android
@@ -252,17 +253,14 @@ try:
     # HELPER FUNCTIONS
     # --------------------------------------------------------
     def render_sharp_text(text, font, color, surface, position, anchor="center"):
-        raw_surf = font.render(str(text), True, color)
-        w, h     = raw_surf.get_size()
-        if w == 0 or h == 0: return  # FIX: guard ukuran 0
-        sharp_surf = pygame.transform.smoothscale(
-            raw_surf, (max(1, w//2), max(1, h//2)))
-        rect = sharp_surf.get_rect()
+        surf = font.render(str(text), True, color)
+        if surf.get_width() == 0 or surf.get_height() == 0: return
+        rect = surf.get_rect()
         if   anchor == "center":    rect.center    = position
         elif anchor == "midleft":   rect.midleft   = position
         elif anchor == "midright":  rect.midright  = position
         elif anchor == "midbottom": rect.midbottom = position
-        surface.blit(sharp_surf, rect)
+        surface.blit(surf, rect)
 
     def haptic_vibrate(duration_ms):
         if VIBRATION_ON and IS_ANDROID and vibrator_service:
