@@ -19,10 +19,14 @@ except ImportError:
     vibrator_service = None
 
 pygame.init()
-
-WIDTH, HEIGHT = 450, 750
-screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.SCALED | pygame.FULLSCREEN)
-pygame.display.set_caption("Brick Breaker - Dynamic Island Settings")
+# Ganti bagian display mode
+if IS_ANDROID:
+    screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+    WIDTH, HEIGHT = screen.get_size()
+else:
+    WIDTH, HEIGHT = 450, 750
+    screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.SCALED | pygame.FULLSCREEN)
+    pygame.display.set_caption("Brick Breaker - Dynamic Island Settings")
 
 # --- WARNA ---
 BG_COLOR = (24, 34, 64)
