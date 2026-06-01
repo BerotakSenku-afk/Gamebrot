@@ -30,12 +30,12 @@ version = 0.1
 requirements = python3,kivy
 
 # (str) Gambar presplash (layar loading)
-# PENTING: Pastikan file ini benar-benar ada di repo!
-presplash.filename = %(source.dir)s/data/ikon.png
+# PENTING: Pastikan file ini benar-benarada di repo!
+presplash.filename = %(source.dir)s/icon.png
 
 # (str) Icon aplikasi
 # PENTING: Pastikan file ini benar-benar ada di repo!
-icon.filename = %(source.dir)s/data/ikon.png
+icon.filename = %(source.dir)s/icon.png
 
 # (list) Orientasi layar
 orientation = portrait
