@@ -36,6 +36,7 @@ def _eh(t, v, tb):
 
 sys.excepthook = _eh
 print(f"=== App Starting, log: {_log} ===")
+print(f"Python version in APK: {sys.version}")
 
 # ============================================================
 # MAIN CODE - Dibungkus try-except
@@ -64,6 +65,18 @@ try:
     except ImportError:
         vibrator_service = None
         print("Desktop mode")
+
+    # Minta permission storage di Android 6+
+    if IS_ANDROID:
+        try:
+            from android.permissions import request_permissions, Permission
+            request_permissions([
+                Permission.WRITE_EXTERNAL_STORAGE,
+                Permission.READ_EXTERNAL_STORAGE
+            ])
+            print("Storage permission requested!")
+        except Exception as e:
+            print(f"Permission request failed: {e}")
 
     # --------------------------------------------------------
     # FIX: SAVE FILE PATH
