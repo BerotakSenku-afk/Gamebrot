@@ -7,27 +7,23 @@ import json
 import os
 import traceback
 
-# ============================================================
-# ERROR LOGGER - Taruh tepat di sini, setelah semua import
-# ============================================================
+# ========================================================
+# Deteksi otomatis apakah dijalankan di Android
+IS_ANDROID = 'ANDROID_ARGUMENT' in os.environ
 
-import os
-_possible_paths = [
-    '/sdcard/bb_error.txt',
-    '/storage/emulated/0/bb_error.txt',  # Path alternatif Android modern
-    os.path.expanduser('~/bb_error.txt'),
-]
-_log = 'bb_error.txt'  # default
-for _p in _possible_paths:
-    try:
-        _dir = os.path.dirname(_p)
-        if os.path.exists(_dir):
-            _log = _p
-            break
-    except Exception:
-        pass
+_log = 'bb_error.txt'  # Default untuk PC
+
+if IS_ANDROID:
+    # Gunakan storage internal sandbox aplikasi (Pasti diizinkan oleh Android)
+    private_path = os.environ.get('ANDROID_PRIVATE', '')
+    if private_path:
+        _log = os.path.join(private_path, 'bb_error.txt')
+    else:
+        _log = '/data/data/org.test.brickbreaker/files/bb_error.txt' # Fallback path
+
 try:
-    _lf = open(_log_path, 'w', buffering=1)
+    # Membuka log dengan aman
+    _lf = open(_log, 'w', buffering=1)
     sys.stderr = _lf
     sys.stdout = _lf
 except Exception:
@@ -36,7 +32,7 @@ except Exception:
 def _crash_handler(exc_type, exc_val, exc_tb):
     msg = ''.join(traceback.format_exception(exc_type, exc_val, exc_tb))
     try:
-        with open(_log_path, 'a') as f:
+        with open(_log, 'a') as f:
             f.write('\n=== CRASH ===\n')
             f.write(msg)
     except Exception:
@@ -61,7 +57,15 @@ except ImportError:
 
 pygame.init()
 WIDTH, HEIGHT = 450, 750
-screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.SCALED | pygame.FULLSCREEN)
+
+# MODIFIKASI: Deteksi resolusi asli Android untuk mencegah black screen / stretch rusak
+if IS_ANDROID:
+    info = pygame.display.Info()
+    # Gunakan resolusi asli HP tapi tetap pertahankan aspek rasio game internal via SCALED
+    screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.SCALED | pygame.FULLSCREEN)
+else:
+    screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.SCALED)
+
 pygame.display.set_caption("Brick Breaker - Dynamic Island Settings")
 
 # --- WARNA ---
@@ -88,13 +92,19 @@ TARGET_FPS = 60
 UNLOCKED_ACHIEVEMENTS = []
 SELECTED_SKIN_IDX = 0
 
+# MODIFIKASI: Path penyimpanan internal Android yang aman dari Permission Denied
 SAVE_FILE = "savegame.json"
 if IS_ANDROID:
     try:
-        from android.storage import app_storage_path
-        SAVE_FILE = os.path.join(app_storage_path(), "savegame.json")
+        # Menggunakan os.environ untuk mengambil path internal sandbox aplikasi
+        private_path = os.environ.get('ANDROID_PRIVATE', '')
+        if private_path:
+            SAVE_FILE = os.path.join(private_path, "savegame.json")
+        else:
+            from android.storage import app_storage_path
+            SAVE_FILE = os.path.join(app_storage_path(), "savegame.json")
     except Exception:
-        SAVE_FILE = "/sdcard/savegame.json"
+        SAVE_FILE = "savegame.json" # Fallback ke local folder jika storage API gagal
 else:
     SAVE_FILE = os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
@@ -259,6 +269,7 @@ def calculate_aim_points(start_x, start_y, angle, bricks):
             
     points.append((x, y))
     return points
+
 
 class Particle:
     def __init__(self, x, y, color, dx, dy, lifetime, size):
