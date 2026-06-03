@@ -52,7 +52,7 @@ android.presplash_color = #000000
 # ============================================================
 
 # (list) Permission yang dibutuhkan aplikasi
-android.permissions = android.permission.INTERNET, android.permission.VIBRATE, (name=android.permission.WRITE_EXTERNAL_STORAGE;maxSdkVersion=18)
+android.permissions = android.permission.INTERNET, android.permission.VIBRATE, WRITE_EXTERNAL_STORAGE, android.prrmission.READ_EXTERNAL_STORAGE
 
 # (int) Target Android API (setinggi mungkin)
 android.api = 33
