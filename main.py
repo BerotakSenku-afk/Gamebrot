@@ -43,8 +43,7 @@ print("=== App Starting ===")
 
 
 # ========================================================
-# --- INTERFACES GETAR ANDROID NATIVE ---
-IS_ANDROID = False
+# --- INTERFACES GETAR ANDROID NATIVE 
 try:
     from jnius import autoclass
     PythonActivity = autoclass('org.kivy.android.PythonActivity')
@@ -59,12 +58,16 @@ pygame.init()
 WIDTH, HEIGHT = 450, 750
 
 # MODIFIKASI: Deteksi resolusi asli Android untuk mencegah black screen / stretch rusak
-if IS_ANDROID:
-    info = pygame.display.Info()
-    # Gunakan resolusi asli HP tapi tetap pertahankan aspek rasio game internal via SCALED
-    screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.SCALED | pygame.FULLSCREEN)
-else:
-    screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.SCALED)
+try:
+    if IS_ANDROID:
+    	info = pygame.display.Info()
+    	screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.SCALED | pygame.FULLSCREEN)
+    else:
+    	screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.SCALED)
+except Exception as e:
+	print(f"Display error: {e}")
+	screen = pygame.display.set_mode((WIDTH, HEIGHT))
+	
 
 pygame.display.set_caption("Brick Breaker - Dynamic Island Settings")
 
@@ -166,6 +169,7 @@ if os.path.exists(FONT_FILE):
     FONT_TITLE = pygame.font.Font(FONT_FILE, 70)   
     FONT_BUTTON = pygame.font.Font(FONT_FILE, 34)  
 else:
+    FONT_MICRO = pygame.font.Font(None, 18)
     FONT_MINI = pygame.font.Font(None, 28)
     FONT_SUB = pygame.font.Font(None, 32)
     FONT_UI = pygame.font.Font(None, 44)
@@ -556,7 +560,9 @@ class DynamicIslandSettings:
 
 
 def main():
-    global FPS_INDEX, current_game_level, UNLOCKED_ACHIEVEMENTS, SELECTED_SKIN_IDX
+    global FPS_INDEX, current_game_level, UNLOCKED_ACHIEVEMENTS, SELECTED_SKIN_IDX    
+    show_leaderboard_soon = False
+    leaderboard_soon_timer = 0
     clock = pygame.time.Clock()
     
     STATE_MENU = 0
@@ -1087,4 +1093,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
+0
